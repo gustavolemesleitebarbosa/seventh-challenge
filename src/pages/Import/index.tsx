@@ -23,19 +23,51 @@ const Import: React.FC = () => {
   const history = useHistory();
 
   async function handleUpload(): Promise<void> {
-    // const data = new FormData();
+    const data = new FormData();
+    data.append('file', uploadedFiles[0].file);
+    data.append('name', uploadedFiles[0].name);
+    data.append('readbleSize', uploadedFiles[0].readableSize);
+    console.log('fucking file', data.get('file'));
 
-    // TODO
+    const dataArray = uploadedFiles.map(file => {
+      const datan = new FormData();
+      datan.append('file', file.file);
+      datan.append('name', file.name);
+      datan.append('readbleSize', file.readableSize);
+      console.log('fucking file', datan.get('file'));
+      return datan;
+    });
 
     try {
-      // await api.post('/transactions/import', data);
+      const asyncForEach = async function (
+        array: string | any[],
+        callback: (arg0: any, arg1: number, arg2: any) => any,
+      ): Promise<void> {
+        // eslint-disable-next-line no-plusplus
+        for (let index = 0; index < array.length; index++) {
+          // eslint-disable-next-line no-await-in-loop
+          await callback(array[index], index, array);
+        }
+      };
+
+      asyncForEach(dataArray, async transaction => {
+        await api.post('/transactions/import', transaction);
+        console.log(transaction);
+      });
     } catch (err) {
-      // console.log(err.response.error);
+      console.log(err.response.error);
     }
   }
 
   function submitFile(files: File[]): void {
-    // TODO
+    const arrayOfFiles = files.map(file => {
+      return {
+        file,
+        name: file.name,
+        readableSize: `${file.size}`,
+      };
+    });
+    setUploadedFiles(arrayOfFiles);
   }
 
   return (
